@@ -1,10 +1,47 @@
+import type { LinksFunction } from "@remix-run/node";
+import { Link, Outlet } from "@remix-run/react";
+
+import styles from "~/styles/jokes.css";
+
+export const links: LinksFunction = () => [
+  {
+    rel: "stylesheet",
+    href: styles,
+  },
+];
+
 const Jokes = () => (
-  <div>
-    <h1>Jokes</h1>
+  <div className="jokes-layout">
+    <header className="jokes-header">
+      <div className="container">
+        <h1 className="home-link">
+          <Link to="/" title="Remix Jokes" aria-label="Remix Jokes">
+            <span className="logo">🤪</span>
+            <span className="logo-medium">J🤪KES</span>
+          </Link>
+        </h1>
+      </div>
+    </header>
 
-    <p>Here's a random joke</p>
-
-    <p>I was wondering why the frisbee was getting bigger, then it hit me.</p>
+    <main className="jokes-main">
+      <div className="container">
+        <div className="jokes-list">
+          <Link to=".">Get a random joke</Link>
+          <p>Here are a few more jokes to check out:</p>
+          <ul>
+            <li>
+              <Link to="some-joke-id">Hippo</Link>
+            </li>
+          </ul>
+          <Link to="new" className="button">
+            Add your own
+          </Link>
+        </div>
+        <div className="jokes-outlet">
+          <Outlet />
+        </div>
+      </div>
+    </main>
   </div>
 );
 

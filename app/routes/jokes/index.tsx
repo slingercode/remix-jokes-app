@@ -1,29 +1,26 @@
-import type { LinksFunction, LoaderFunction } from "@remix-run/node";
+import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, Outlet, useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 
 import { db } from "~/utils/db.server";
-import styles from "~/styles/jokes.css";
-
-export const links: LinksFunction = () => [
-  {
-    rel: "stylesheet",
-    href: styles,
-  },
-];
 
 type LoaderData = {
-  jokes: { id: string; name: string }[];
+  randomJoke: {
+    id: string;
+    name: string;
+    content: string;
+  };
 };
 
 export const loader: LoaderFunction = async () => {
-  const data: LoaderData = {
-    jokes: await db.joke.findMany({
-      take: 5,
-      select: { id: true, name: true },
-      orderBy: { createdAt: "desc" },
-    }),
-  };
+  const jokesCount = await db.joke.count();
+  const randomRowNumber = Math.floor(Math.random() * jokesCount);
+  const [randomJoke] = await db.joke.findMany({
+    take: 1,
+    skip: randomRowNumber,
+  });
+
+  const data: LoaderData = { randomJoke };
 
   return json(data);
 };
@@ -32,43 +29,12 @@ const Jokes = () => {
   const data = useLoaderData<LoaderData>();
 
   return (
-    <div className="jokes-layout">
-      <header className="jokes-header">
-        <div className="container">
-          <h1 className="home-link">
-            <Link to="/" title="Remix Jokes" aria-label="Remix Jokes">
-              <span className="logo">🤪</span>
-              <span className="logo-medium">J🤪KES</span>
-            </Link>
-          </h1>
-        </div>
-      </header>
+    <div>
+      <p>Here's a random joke:</p>
 
-      <main className="jokes-main">
-        <div className="container">
-          <div className="jokes-list">
-            <Link to=".">Get a random joke</Link>
+      <p>{data.randomJoke.content}</p>
 
-            <p>Here are a few more jokes to check out:</p>
-
-            <ul>
-              {data.jokes.map((joke) => (
-                <li key={joke.id}>
-                  <Link to={joke.id}>{joke.name}</Link>
-                </li>
-              ))}
-            </ul>
-
-            <Link to="new" className="button">
-              Add your own
-            </Link>
-          </div>
-
-          <div className="jokes-outlet">
-            <Outlet />
-          </div>
-        </div>
-      </main>
+      <Link to={data.randomJoke.id}>"{data.randomJoke.name}" Permalink</Link>
     </div>
   );
 };
